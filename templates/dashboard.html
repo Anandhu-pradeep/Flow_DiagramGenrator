@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .project-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .project-card {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        transition: all 0.3s;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .project-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .project-card h3 {
+        margin: 0 0 0.5rem 0;
+        color: var(--text-light);
+    }
+
+    .project-card p {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    .meta {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .create-card {
+        border-style: dashed;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 150px;
+    }
+
+    form#new-project-form {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 2rem;
+    }
+
+    input#project-name {
+        background: #0f172a;
+        border: 1px solid var(--border);
+        padding: 0.75rem;
+        border-radius: 8px;
+        color: white;
+        flex: 1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1>Your Flows</h1>
+            <p style="color: var(--text-muted);">Manage and edit your logic diagrams.</p>
+        </div>
+        <div>
+            <span style="color: var(--text-muted); font-size: 0.9rem;">Total Projects: {{ projects.count }}</span>
+        </div>
+    </div>
+
+    <form id="new-project-form" onsubmit="createProject(event)">
+        <input type="text" id="project-name" placeholder="Enter Flow Name (e.g. Login Process)" required>
+        <button type="submit" class="btn btn-primary">Create Project</button>
+    </form>
+
+    <div class="project-grid" id="project-list">
+        {% for project in projects %}
+            <div class="project-card" data-url="{% url 'project_editor' project.pk %}" onclick="window.location.href=this.dataset.url">
+                <h3>{{ project.name }}</h3>
+                <p>{{ project.schema.raw_code|truncatechars:60 }}</p>
+                <div class="meta">
+                    <span>Last updated: {{ project.updated_at|date:"M d, Y" }}</span>
+                    <span>→</span>
+                </div>
+            </div>
+        {% empty %}
+            <!-- This will be shown if no projects exist -->
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function createProject(e) {
+        e.preventDefault();
+        const projectName = document.getElementById('project-name').value;
+        const response = await fetch('/api/projects/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ name: projectName })
+        });
+        if (response.ok) {
+            const data = await response.json();
+            window.location.href = `/project/${data.id}/`;
+        }
+    }
+</script>
+{% endblock %}

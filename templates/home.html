@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .hero {
+        padding: 8rem 2rem;
+        text-align: center;
+        background: radial-gradient(circle at top, rgba(99, 102, 241, 0.15) 0%, transparent 50%);
+    }
+
+    .hero h1 {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        letter-spacing: -2px;
+    }
+
+    .hero p {
+        font-size: 1.25rem;
+        color: var(--text-muted);
+        max-width: 600px;
+        margin: 0 auto 2.5rem auto;
+    }
+
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+        margin-top: 4rem;
+    }
+
+    .feature-card {
+        padding: 2rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        text-align: left;
+    }
+
+    .feature-card h3 {
+        margin-top: 0;
+        color: var(--primary);
+    }
+
+    .demo-preview {
+        margin-top: 6rem;
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="hero">
+        <h1>Code-to-Flow<br><span style="color: var(--primary);">Real-Time Synthing.</span></h1>
+        <p>Design your logic flow with a simple syntax and watch it transform into a beautiful Flow Diagram instantly.</p>
+        <div>
+            <a href="{% url 'register' %}" class="btn btn-primary" style="padding: 1rem 2.5rem; font-size: 1.1rem;">Get Started for Free</a>
+            <a href="#features" class="btn" style="margin-left: 1rem; color: white;">View Features</a>
+        </div>
+    </section>
+
+    <section id="features" class="feature-grid">
+        <div class="feature-card">
+            <h3>Custom Syntax</h3>
+            <p>Write flowchart nodes and links in a language you'll love. Intuitive, fast, and structured.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Live Preview</h3>
+            <p>See your changes as you type. Real-time rendering powered by Mermaid.js.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Project Management</h3>
+            <p>Save multiple flows, version your diagrams, and export to Mermaid code anytime.</p>
+        </div>
+    </section>
+
+    <div class="demo-preview">
+        <div style="background: var(--bg-card); padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); display: flex; gap: 10px;">
+            <div style="width:12px; height:12px; border-radius:50%; background:#ff5f56;"></div>
+            <div style="width:12px; height:12px; border-radius:50%; background:#ffbd2e;"></div>
+            <div style="width:12px; height:12px; border-radius:50%; background:#27c93f;"></div>
+        </div>
+        <!-- Using a placeholder image for the demo preview -->
+        <div style="height: 400px; display: flex; align-items: center; justify-content: center; background: #020617;">
+            <p style="color: var(--text-muted); font-size: 1.5rem; font-weight: 300;">SchemaCraft Editor Preview</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

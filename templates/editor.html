@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .editor-container {
+        display: flex;
+        height: calc(100vh - 150px);
+        gap: 1.5rem;
+        padding-top: 1.5rem;
+    }
+
+    .sidebar {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .preview-area {
+        flex: 2;
+        background-color: #111827;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        position: relative;
+        overflow: auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .code-editor {
+        flex: 1;
+        background-color: #020617;
+        color: #e2e8f0;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        font-family: 'Fira Code', 'Courier New', monospace;
+        font-size: 14px;
+        resize: none;
+        outline: none;
+        transition: border 0.3s;
+    }
+
+    .code-editor:focus {
+        border-color: var(--primary);
+    }
+
+    .toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    #mermaid-container {
+        width: 100%;
+        height: 100%;
+    }
+
+    .loading-status {
+        position: absolute;
+        bottom: 1rem;
+        right: 1rem;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1400px;">
+    <div class="toolbar">
+        <div>
+            <h1>{{ project.name }}</h1>
+            <p style="color: var(--text-muted);">Drafting Flow Diagram</p>
+        </div>
+        <div>
+            <button id="save-btn" class="btn btn-primary" onclick="saveSchema()">Save Flow</button>
+            <button class="btn" style="background: var(--bg-card); color: white;" onclick="copyMermaid()">Copy Code</button>
+            <button class="btn" style="background: var(--accent); color: white;" onclick="downloadPNG()">Download PNG</button>
+        </div>
+    </div>
+
+    <div class="editor-container">
+        <div class="sidebar">
+            <textarea id="schema-editor" class="code-editor" spellcheck="false">{{ project.schema.raw_code }}</textarea>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">
+                <b>Syntax Help:</b><br>
+                ID([Oval/Start])<br>
+                ID[Box/Process]<br>
+                ID{Diamond/Decision}<br>
+                ID1-"Link"-ID2<br>
+                ID1-ID2[Compact Shape]
+            </div>
+        </div>
+        <div class="preview-area">
+            <div id="mermaid-container" class="mermaid">
+                <!-- Diagram renders here -->
+            </div>
+            <div id="status" class="loading-status">Up to date</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const editor = document.getElementById('schema-editor');
+    const mermaidContainer = document.getElementById('mermaid-container');
+    const statusEl = document.getElementById('status');
+    const projectId = "{{ project.id }}";
+    let lastMermaid = "";
+
+    // Debounce function
+    let timeout;
+    editor.addEventListener('input', () => {
+        statusEl.innerText = "Parsing...";
+        clearTimeout(timeout);
+        timeout = setTimeout(updatePreview, 600);
+    });
+
+    async function updatePreview() {
+        const code = editor.value;
+        try {
+            const response = await fetch(`/api/projects/${projectId}/parse/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ schema_code: code })
+            });
+            const data = await response.json();
+            
+            if (data.mermaid_code) {
+                lastMermaid = data.mermaid_code;
+                renderDiagram(data.mermaid_code);
+                statusEl.innerText = "Live Preview Updated";
+            }
+        } catch (err) {
+            statusEl.innerText = "Parse Error";
+            console.error(err);
+        }
+    }
+
+    function renderDiagram(code) {
+        mermaidContainer.removeAttribute('data-processed');
+        mermaidContainer.innerHTML = code;
+        mermaid.render('graph-id', code).then(({ svg }) => {
+            mermaidContainer.innerHTML = svg;
+        }).catch(err => {
+            console.warn("Mermaid error:", err);
+            statusEl.innerText = "Syntax Error";
+        });
+    }
+
+    async function saveSchema() {
+        const code = editor.value;
+        statusEl.innerText = "Saving...";
+        try {
+            const response = await fetch(`/api/projects/${projectId}/`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ schema_code: code })
+            });
+            if (response.ok) {
+                statusEl.innerText = "Changes Saved Successfully";
+            }
+        } catch (err) {
+            statusEl.innerText = "Failed to save";
+        }
+    }
+
+    function copyMermaid() {
+        navigator.clipboard.writeText(lastMermaid);
+        alert("Mermaid code copied to clipboard!");
+    }
+
+    function downloadPNG() {
+        const svgElement = mermaidContainer.querySelector('svg');
+        if (!svgElement) {
+            alert("Please wait for the diagram to render!");
+            return;
+        }
+
+        // Clone it so we don't mess with the live preview
+        const clonedSvg = svgElement.cloneNode(true);
+        clonedSvg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+
+        // Force dimensions if not set
+        const bbox = svgElement.getBBox();
+        const width = bbox.width + 40; // Add some padding
+        const height = bbox.height + 40;
+        clonedSvg.setAttribute("width", width);
+        clonedSvg.setAttribute("height", height);
+
+        const svgData = new XMLSerializer().serializeToString(clonedSvg);
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        // High resolution
+        const scale = 2;
+        canvas.width = width * scale;
+        canvas.height = height * scale;
+
+        const img = new Image();
+        // Use b64 instead of Blob to avoid some security/timing issues
+        const svgBase64 = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+
+        img.onload = function() {
+            // Draw background
+            ctx.fillStyle = "#111827";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw SVG
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            
+            const pngUrl = canvas.toDataURL("image/png");
+            const link = document.createElement("a");
+            link.href = pngUrl;
+            link.download = `flowcraft_${new Date().getTime()}.png`;
+            link.click();
+        };
+
+        img.onerror = function(err) {
+            console.error("Export Error:", err);
+            alert("Failed to convert diagram to image. Check console for details.");
+        };
+
+        img.src = svgBase64;
+    }
+
+    // Initial render
+    window.onload = updatePreview;
+</script>
+{% endblock %}
