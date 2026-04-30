@@ -57,7 +57,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'schemacraft_db',
         'USER': 'root',
-        'PASSWORD': '',
+        'PASSWORD': 'anandhu@1234',
         'HOST': 'localhost',
         'PORT': '3306',
         'OPTIONS': {

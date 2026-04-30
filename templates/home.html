@@ -5,7 +5,7 @@
     .hero {
         padding: 8rem 2rem;
         text-align: center;
-        background: radial-gradient(circle at top, rgba(99, 102, 241, 0.15) 0%, transparent 50%);
+        background: radial-gradient(ellipse at top, rgba(26,5,162,0.25) 0%, rgba(143,1,119,0.12) 40%, transparent 70%);
     }
 
     .hero h1 {
@@ -26,19 +26,31 @@
         grid-template-columns: repeat(3, 1fr);
         gap: 2rem;
         margin-top: 4rem;
+        padding: 4rem 2rem;
+        background: var(--bg-surface);
+        border-radius: 24px;
+        border: 1px solid var(--border);
     }
 
     .feature-card {
-        padding: 2rem;
-        background: var(--bg-card);
+        padding: 2.5rem;
+        background: rgba(20, 12, 54, 0.4);
+        backdrop-filter: blur(8px);
         border: 1px solid var(--border);
         border-radius: 16px;
         text-align: left;
+        transition: all 0.3s ease;
+    }
+    .feature-card:hover {
+        transform: translateY(-8px);
+        background: rgba(20, 12, 54, 0.6);
+        border-color: var(--secondary);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
     }
 
     .feature-card h3 {
         margin-top: 0;
-        color: var(--primary);
+        color: var(--secondary);
     }
 
     .demo-preview {
@@ -54,7 +66,7 @@
 {% block content %}
 <div class="container">
     <section class="hero">
-        <h1>Code-to-Flow<br><span style="color: var(--primary);">Real-Time Synthing.</span></h1>
+        <h1>Code-to-Flow<br><span style="background: linear-gradient(to right, var(--secondary), var(--accent), var(--highlight)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">Real-Time Synthing.</span></h1>
         <p>Design your logic flow with a simple syntax and watch it transform into a beautiful Flow Diagram instantly.</p>
         <div>
             <a href="{% url 'register' %}" class="btn btn-primary" style="padding: 1rem 2.5rem; font-size: 1.1rem;">Get Started for Free</a>

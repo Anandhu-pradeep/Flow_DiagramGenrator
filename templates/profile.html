@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .profile-container {
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 3rem 1rem;
+    }
+    .profile-header {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    .avatar {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #1A05A2, #8F0177, #DE1A58);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #fff;
+        flex-shrink: 0;
+        box-shadow: 0 0 0 4px rgba(26,5,162,0.25), 0 0 24px rgba(143,1,119,0.3);
+    }
+    .profile-name h2 {
+        margin: 0 0 0.3rem;
+        font-size: 1.6rem;
+    }
+    .profile-name p {
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+    }
+    .profile-details {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 2rem;
+    }
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.85rem 0;
+        border-bottom: 1px solid var(--border);
+    }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+    .detail-value {
+        color: var(--text-light);
+        font-size: 0.95rem;
+    }
+    .badge-premium {
+        background: linear-gradient(135deg, rgba(143,1,119,0.25), rgba(246,125,49,0.2));
+        color: #F67D31;
+        border: 1px solid rgba(246,125,49,0.4);
+        padding: 0.2rem 0.7rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    .badge-standard {
+        background: rgba(148,163,184,0.15);
+        color: #94a3b8;
+        border: 1px solid rgba(148,163,184,0.3);
+        padding: 0.2rem 0.7rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    .edit-btn-wrap {
+        text-align: right;
+        margin-top: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <a href="{% url 'dashboard' %}" style="display:inline-flex;align-items:center;gap:0.4rem;color:var(--text-muted);text-decoration:none;font-size:0.95rem;margin-bottom:1.5rem;transition:color 0.2s;" onmouseover="this.style.color='var(--secondary)'" onmouseout="this.style.color='var(--text-muted)'">
+        ← Back
+    </a>
+    <div class="profile-header">
+        <div class="avatar">{{ user.username|first|upper }}</div>
+        <div class="profile-name">
+            <h2>{{ user.get_full_name|default:user.username }}</h2>
+            <p>@{{ user.username }}</p>
+            {% if profile.is_premium %}
+                <span class="badge-premium" style="margin-top:0.5rem;display:inline-block;">⭐ Premium</span>
+            {% else %}
+                <span class="badge-standard" style="margin-top:0.5rem;display:inline-block;">Standard</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="profile-details">
+        <div class="detail-row">
+            <span class="detail-label">Email</span>
+            <span class="detail-value">{{ user.email|default:"Not set" }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Date of Birth</span>
+            <span class="detail-value">{{ profile.dob|date:"F j, Y"|default:"Not set" }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Phone</span>
+            <span class="detail-value">{{ profile.phone|default:"Not set" }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Bio</span>
+            <span class="detail-value">{{ profile.bio|default:"No bio yet." }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Member Since</span>
+            <span class="detail-value">{{ user.date_joined|date:"F j, Y" }}</span>
+        </div>
+    </div>
+
+    <div class="edit-btn-wrap">
+        <a href="{% url 'profile_edit' %}" class="btn btn-primary">✏️ Edit Profile</a>
+    </div>
+</div>
+{% endblock %}

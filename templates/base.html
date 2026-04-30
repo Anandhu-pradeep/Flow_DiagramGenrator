@@ -8,14 +8,17 @@
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
     <style>
         :root {
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
-            --bg-dark: #0f172a;
-            --bg-card: #1e293b;
+            --primary: #1A05A2;
+            --primary-hover: #150480;
+            --secondary: #8F0177;
+            --accent: #DE1A58;
+            --highlight: #F67D31;
+            --bg-dark: #050314;
+            --bg-surface: #0d0725;
+            --bg-card: #140c36;
             --text-light: #f8fafc;
-            --text-muted: #94a3b8;
-            --border: #334155;
-            --accent: #10b981;
+            --text-muted: #a89cc8;
+            --border: #2a1f5c;
         }
 
         body {
@@ -23,8 +26,15 @@
             padding: 0;
             font-family: 'Outfit', sans-serif;
             background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(26, 5, 162, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(143, 1, 119, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(246, 125, 49, 0.05) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(222, 26, 88, 0.1) 0px, transparent 50%);
+            background-attachment: fixed;
             color: var(--text-light);
             line-height: 1.6;
+            min-height: 100vh;
         }
 
         .navbar {
@@ -32,7 +42,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 1rem 2rem;
-            background: rgba(30, 41, 59, 0.7);
+            background: rgba(17, 13, 46, 0.8);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
             position: sticky;
@@ -43,7 +53,7 @@
         .navbar-brand {
             font-size: 1.5rem;
             font-weight: 700;
-            background: linear-gradient(to right, #818cf8, #c084fc);
+            background: linear-gradient(to right, #1A05A2, #8F0177, #DE1A58);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -80,14 +90,27 @@
         }
 
         .btn-primary {
-            background-color: var(--primary);
+            background: linear-gradient(135deg, #1A05A2, #8F0177);
             color: white;
         }
 
         .btn-primary:hover {
-            background-color: var(--primary-hover);
+            background: linear-gradient(135deg, #150480, #6d015c);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 4px 16px rgba(26,5,162,0.4);
+        }
+
+        .btn-logout {
+            background: linear-gradient(135deg, #DE1A58, #b91c1c);
+            color: #ffffff !important;
+            border-radius: 999px;
+            padding: 0.45rem 1.3rem;
+        }
+
+        .btn-logout:hover {
+            background: linear-gradient(135deg, #b91c1c, #8b0000);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(222,26,88,0.35);
         }
 
         .container {
@@ -128,7 +151,15 @@
         <div class="nav-links">
             {% if user.is_authenticated %}
                 <a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a>
-                <a href="{% url 'logout' %}" class="btn btn-outline">Logout ({{ user.username }})</a>
+                {% if user.is_superuser %}
+                <a href="{% url 'admin_dashboard' %}" class="nav-link" style="color: #F67D31;">Admin</a>
+                {% endif %}
+                <a href="{% url 'profile' %}" class="nav-link" title="My Profile" style="display:flex;align-items:center;gap:0.4rem;">
+                    <span style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#1A05A2,#8F0177,#DE1A58);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;color:#fff;flex-shrink:0;">
+                        {{ user.username|first|upper }}
+                    </span>
+                </a>
+                <a href="{% url 'logout' %}" class="btn btn-logout">Logout</a>
             {% else %}
                 <a href="{% url 'login' %}" class="nav-link">Login</a>
                 <a href="{% url 'register' %}" class="btn btn-primary">Try for Free</a>
@@ -137,6 +168,15 @@
     </nav>
 
     <main>
+        {% if messages %}
+        <div class="container" style="padding-bottom: 0;">
+            {% for message in messages %}
+            <div style="padding: 1rem; border-radius: 8px; margin-bottom: 1rem; {% if message.tags == 'success' %}background-color: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981;{% else %}background-color: rgba(99, 102, 241, 0.2); color: #818cf8; border: 1px solid #6366f1;{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
         {% block content %}{% endblock %}
     </main>
 

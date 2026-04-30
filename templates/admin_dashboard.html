@@ -1,0 +1,243 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .dashboard-header {
+        margin-bottom: 2rem;
+    }
+    .dashboard-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(to right, #1A05A2, #8F0177, #DE1A58);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+        padding: 2rem;
+        background: var(--bg-surface);
+        border-radius: 16px;
+        border: 1px solid var(--border);
+    }
+    .stat-card {
+        background-color: rgba(20, 12, 54, 0.4);
+        backdrop-filter: blur(4px);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        background-color: rgba(20, 12, 54, 0.6);
+        border-color: var(--highlight);
+    }
+    .stat-card h3 {
+        color: var(--text-muted);
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+        margin-top: 0;
+    }
+    .stat-card .value {
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--text-light);
+        margin: 0;
+    }
+    .premium-list {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .premium-list-header {
+        background: linear-gradient(135deg, rgba(26,5,162,0.3), rgba(143,1,119,0.2));
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border);
+    }
+    .premium-list-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    th, td {
+        padding: 1rem 1.5rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+    }
+    th {
+        color: var(--text-muted);
+        font-weight: 600;
+        background-color: rgba(15, 23, 42, 0.3);
+    }
+    tr:last-child td {
+        border-bottom: none;
+    }
+    tr:hover td {
+        background-color: rgba(255, 255, 255, 0.02);
+    }
+    .badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        background: linear-gradient(135deg, rgba(143,1,119,0.25), rgba(246,125,49,0.2));
+        color: #F67D31;
+        border: 1px solid rgba(246,125,49,0.3);
+    }
+    .badge-regular {
+        background-color: rgba(148, 163, 184, 0.2);
+        color: #94a3b8;
+    }
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+        border-radius: 4px;
+        background-color: transparent;
+        border: 1px solid var(--border);
+        color: var(--text-light);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .btn-sm:hover {
+        background-color: var(--border);
+    }
+    .btn-sm.premium-btn {
+        border-color: #8F0177;
+        color: #DE1A58;
+    }
+    .btn-sm.premium-btn:hover {
+        background-color: rgba(143,1,119,0.12);
+    }
+    .btn-sm.btn-delete { border-color: #ef4444; color: #ef4444; }
+    .btn-sm.btn-delete:hover { background-color: rgba(239,68,68,0.12); }
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:999; justify-content:center; align-items:center; }
+    .modal-overlay.active { display:flex; }
+    .modal-box { background:var(--bg-card); border:1px solid #ef4444; border-radius:16px; padding:2.5rem; max-width:400px; width:90%; text-align:center; box-shadow:0 0 40px rgba(239,68,68,0.2); animation:pop-in 0.2s ease; }
+    @keyframes pop-in { from{transform:scale(0.9);opacity:0} to{transform:scale(1);opacity:1} }
+    .modal-box h3 { margin-top:0; color:#ef4444; font-size:1.3rem; }
+    .modal-box p  { color:var(--text-muted); font-size:0.95rem; }
+    .modal-actions { display:flex; gap:1rem; margin-top:1.5rem; }
+    .modal-actions form { flex:1; }
+    .modal-actions button { width:100%; padding:0.75rem; border-radius:8px; font-weight:600; cursor:pointer; font-size:0.95rem; transition:all 0.2s; }
+    .btn-confirm-delete { background:#ef4444; color:#fff; border:none; }
+    .btn-confirm-delete:hover { background:#b91c1c; }
+    .btn-cancel-modal { background:transparent; color:var(--text-light); border:1px solid var(--border); }
+    .btn-cancel-modal:hover { background:var(--border); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="dashboard-header">
+        <h1>Admin Dashboard</h1>
+        <p style="color: var(--text-muted);">Overview of platform statistics and premium members.</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Total Users</h3>
+            <p class="value">{{ total_users }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Premium Accounts</h3>
+            <p class="value" style="background:linear-gradient(135deg,#DE1A58,#F67D31);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">{{ premium_count }}</p>
+        </div>
+    </div>
+
+    <div class="premium-list">
+        <div class="premium-list-header">
+            <h2>User Management</h2>
+        </div>
+        {% if all_users %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user_obj in all_users %}
+                <tr>
+                    <td>{{ user_obj.username }}</td>
+                    <td>{{ user_obj.email|default:"N/A" }}</td>
+                    <td>
+                        {% if user_obj.profile.is_premium %}
+                        <span class="badge">Premium</span>
+                        {% else %}
+                        <span class="badge badge-regular">Standard</span>
+                        {% endif %}
+                    </td>
+                    <td style="white-space:nowrap;">
+                        <div style="display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap;">
+                            <form method="POST" action="{% url 'toggle_premium' user_obj.id %}" style="margin:0;">
+                                {% csrf_token %}
+                                {% if user_obj.profile.is_premium %}
+                                    <button type="submit" class="btn-sm">Remove Premium</button>
+                                {% else %}
+                                    <button type="submit" class="btn-sm premium-btn">Make Premium</button>
+                                {% endif %}
+                            </form>
+                            <button type="button" class="btn-sm btn-delete"
+                                onclick="openDeleteModal('{{ user_obj.id }}', '{{ user_obj.username }}')">
+                                🗑 Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="padding: 2rem; text-align: center; color: var(--text-muted);">
+            <p>No users found.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal-box">
+        <h3>⚠️ Delete Account</h3>
+        <p>Are you sure you want to permanently delete <strong id="deleteUsername"></strong>? This cannot be undone.</p>
+        <div class="modal-actions">
+            <form method="POST" id="deleteForm">
+                {% csrf_token %}
+                <button type="submit" class="btn-confirm-delete">Yes, Delete</button>
+            </form>
+            <button class="btn-cancel-modal" onclick="closeDeleteModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function openDeleteModal(userId, username) {
+        document.getElementById('deleteUsername').textContent = username;
+        document.getElementById('deleteForm').action = '/admin-dashboard/delete-user/' + userId + '/';
+        document.getElementById('deleteModal').classList.add('active');
+    }
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('active');
+    }
+    document.getElementById('deleteModal').addEventListener('click', function(e) {
+        if (e.target === this) closeDeleteModal();
+    });
+</script>
+{% endblock %}

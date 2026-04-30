@@ -16,13 +16,17 @@
         padding: 2.5rem;
         max-width: 400px;
         width: 100%;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 20px 40px rgba(26,5,162,0.25), 0 0 0 1px rgba(143,1,119,0.15);
     }
 
     .auth-card h2 {
         margin-top: 0;
         margin-bottom: 2rem;
         text-align: center;
+        background: linear-gradient(to right, var(--secondary), var(--accent), var(--highlight));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
 
     .auth-form {
@@ -41,11 +45,17 @@
     .form-group input {
         width: 100%;
         padding: 0.75rem;
-        background: #0f172a;
+        background: var(--bg-dark);
         border: 1px solid var(--border);
         border-radius: 8px;
         color: white;
         box-sizing: border-box;
+        transition: border-color 0.2s;
+    }
+    .form-group input:focus {
+        outline: none;
+        border-color: #8F0177;
+        box-shadow: 0 0 0 2px rgba(143,1,119,0.2);
     }
 
     .auth-footer {

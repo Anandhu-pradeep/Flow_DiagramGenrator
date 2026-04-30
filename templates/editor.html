@@ -60,10 +60,26 @@
 
     .loading-status {
         position: absolute;
-        bottom: 1rem;
+        top: 1rem;
         right: 1rem;
-        font-size: 0.8rem;
-        color: var(--text-muted);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        background: rgba(26, 5, 162, 0.4);
+        backdrop-filter: blur(4px);
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--text-light);
+        z-index: 10;
+        pointer-events: none;
+        transition: all 0.3s ease;
+    }
+    .loading-status.success {
+        background: rgba(143, 1, 119, 0.6);
+        border-color: var(--highlight);
+        box-shadow: 0 0 15px rgba(246, 125, 49, 0.3);
     }
 </style>
 {% endblock %}
@@ -95,10 +111,10 @@
             </div>
         </div>
         <div class="preview-area">
+            <div id="status" class="loading-status">Ready</div>
             <div id="mermaid-container" class="mermaid">
                 <!-- Diagram renders here -->
             </div>
-            <div id="status" class="loading-status">Up to date</div>
         </div>
     </div>
 </div>
@@ -137,9 +153,12 @@
                 lastMermaid = data.mermaid_code;
                 renderDiagram(data.mermaid_code);
                 statusEl.innerText = "Live Preview Updated";
+                statusEl.classList.add('success');
+                setTimeout(() => statusEl.classList.remove('success'), 2000);
             }
         } catch (err) {
             statusEl.innerText = "Parse Error";
+            statusEl.classList.remove('success');
             console.error(err);
         }
     }
