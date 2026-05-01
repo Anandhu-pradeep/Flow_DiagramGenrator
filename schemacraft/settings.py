@@ -54,12 +54,22 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'schemacraft.wsgi.application'
 
+import certifi
+
 DATABASES = {
     'default': dj_database_url.config(
         default='sqlite:///db.sqlite3',
         conn_max_age=600
     )
 }
+
+# Ensure MySQL connections to Aiven use SSL and certifi's CA bundle
+if DATABASES['default']['ENGINE'] == 'django.db.backends.mysql':
+    if 'OPTIONS' not in DATABASES['default']:
+        DATABASES['default']['OPTIONS'] = {}
+    DATABASES['default']['OPTIONS']['ssl'] = {
+        'ca': certifi.where()
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
