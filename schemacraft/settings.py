@@ -65,11 +65,14 @@ DATABASES = {
 
 # Ensure MySQL connections to Aiven use SSL and certifi's CA bundle
 if DATABASES['default']['ENGINE'] == 'django.db.backends.mysql':
-    if 'OPTIONS' not in DATABASES['default']:
-        DATABASES['default']['OPTIONS'] = {}
-    DATABASES['default']['OPTIONS']['ssl'] = {
-        'ca': certifi.where()
-    }
+    options = DATABASES['default'].get('OPTIONS', {})
+    
+    # Remove unsupported 'ssl-mode' added by dj_database_url parsing
+    if 'ssl-mode' in options:
+        del options['ssl-mode']
+        
+    options['ssl'] = {'ca': certifi.where()}
+    DATABASES['default']['OPTIONS'] = options
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
