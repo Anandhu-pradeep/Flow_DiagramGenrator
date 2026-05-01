@@ -57,22 +57,18 @@ WSGI_APPLICATION = 'schemacraft.wsgi.application'
 import certifi
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default='sqlite:///db.sqlite3',
-        conn_max_age=600
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.environ.get('DB_NAME', 'defaultdb'),
+        'USER': os.environ.get('DB_USER', 'avnadmin'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+        'HOST': os.environ.get('DB_HOST', 'mysql-31a6ad45-anandhupradeep177-8ca4.l.aivencloud.com'),
+        'PORT': os.environ.get('DB_PORT', '14705'),
+        'OPTIONS': {
+            'ssl': {'ca': certifi.where()}
+        }
+    }
 }
-
-# Ensure MySQL connections to Aiven use SSL and certifi's CA bundle
-if DATABASES['default']['ENGINE'] == 'django.db.backends.mysql':
-    options = DATABASES['default'].get('OPTIONS', {})
-    
-    # Remove unsupported 'ssl-mode' added by dj_database_url parsing
-    if 'ssl-mode' in options:
-        del options['ssl-mode']
-        
-    options['ssl'] = {'ca': certifi.where()}
-    DATABASES['default']['OPTIONS'] = options
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
