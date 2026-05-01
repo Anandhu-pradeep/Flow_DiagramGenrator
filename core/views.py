@@ -11,7 +11,14 @@ from rest_framework.views import APIView
 from django.contrib.auth.models import User
 from .models import Project, Schema, Node, Edge, UserProfile
 from .parser import FlowParser
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
+
+def setup_admin_view(request):
+    if not User.objects.filter(username='admin').exists():
+        User.objects.create_superuser('admin', 'admin@example.com', 'admin@123')
+        return HttpResponse("Admin created! Username: admin | Password: admin@123")
+    return HttpResponse("Admin already exists!")
+
 
 # Template-based Views
 class HomeView(TemplateView):

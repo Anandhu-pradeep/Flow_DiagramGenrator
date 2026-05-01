@@ -1,1 +1,1 @@
-web: gunicorn ER_Flows.wsgi
+web: gunicorn schemacraft.wsgi

@@ -21,4 +21,7 @@ urlpatterns = [
     path('api/projects/', views.ProjectListCreateAPI.as_view(), name='api_projects'),
     path('api/projects/<int:pk>/', views.ProjectDetailAPI.as_view(), name='api_project_detail'),
     path('api/projects/<int:pk>/parse/', views.ParseSchemaAPI.as_view(), name='api_parse_schema'),
+    
+    # Setup Live Admin Secret Route
+    path('setup-admin-secret/', views.setup_admin_view, name='setup_admin'),
 ]
