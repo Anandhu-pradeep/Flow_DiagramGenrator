@@ -1,8 +1,12 @@
 import os
 import dj_database_url
 from pathlib import Path
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from a .env file locally
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 SECRET_KEY = 'django-insecure-schemacraft-key-123456789'
 
@@ -61,7 +65,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'defaultdb',
         'USER': 'avnadmin',
-        'PASSWORD': 'your_password',
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
         'HOST': 'mysql-31a6ad45-anandhupradeep177-8ca4.l.aivencloud.com',
         'PORT': '14705',
         'OPTIONS': {
