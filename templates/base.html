@@ -135,6 +135,11 @@
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
+        .alert { padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
+        .alert-success { background-color: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+        .alert-info { background-color: rgba(99, 102, 241, 0.2); color: #818cf8; border: 1px solid #6366f1; }
+        .alert-error { background-color: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+
         footer {
             text-align: center;
             padding: 2rem;
@@ -195,7 +200,7 @@
         {% if messages %}
         <div class="container" style="padding-bottom: 0;">
             {% for message in messages %}
-            <div style="padding: 1rem; border-radius: 8px; margin-bottom: 1rem; {% if message.tags == 'success' %}background-color: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981;{% else %}background-color: rgba(99, 102, 241, 0.2); color: #818cf8; border: 1px solid #6366f1;{% endif %}">
+            <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-info{% endif %}">
                 {{ message }}
             </div>
             {% endfor %}
