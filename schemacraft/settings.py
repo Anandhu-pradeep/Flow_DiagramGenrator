@@ -59,13 +59,15 @@ import certifi
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('DB_NAME', 'defaultdb'),
-        'USER': os.environ.get('DB_USER', 'avnadmin'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-        'HOST': os.environ.get('DB_HOST', 'mysql-31a6ad45-anandhupradeep177-8ca4.l.aivencloud.com'),
-        'PORT': os.environ.get('DB_PORT', '14705'),
+        'NAME': 'defaultdb',
+        'USER': 'avnadmin',
+        'PASSWORD': 'your_password',
+        'HOST': 'mysql-31a6ad45-anandhupradeep177-8ca4.l.aivencloud.com',
+        'PORT': '14705',
         'OPTIONS': {
-            'ssl': {'ca': certifi.where()}
+            'ssl': {
+                'ca': os.path.join(BASE_DIR, 'ca.pem')
+            }
         }
     }
 }
