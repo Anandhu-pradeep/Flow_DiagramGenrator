@@ -1,4 +1,4 @@
-pip freeze > requirements.txt{% extends 'base.html' %}
+{% extends 'base.html' %}
 
 {% block extra_css %}
 <style>
@@ -160,6 +160,7 @@ pip freeze > requirements.txt{% extends 'base.html' %}
             <h2>User Management</h2>
         </div>
         {% if all_users %}
+        <div style="overflow-x: auto;">
         <table>
             <thead>
                 <tr>
@@ -201,6 +202,7 @@ pip freeze > requirements.txt{% extends 'base.html' %}
                 {% endfor %}
             </tbody>
         </table>
+        </div>
         {% else %}
         <div style="padding: 2rem; text-align: center; color: var(--text-muted);">
             <p>No users found.</p>

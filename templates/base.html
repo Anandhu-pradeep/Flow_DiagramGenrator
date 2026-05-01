@@ -142,6 +142,30 @@
             border-top: 1px solid var(--border);
             margin-top: 4rem;
         }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                padding: 1rem;
+                gap: 1rem;
+            }
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 1rem;
+            }
+            .container {
+                padding: 1rem;
+            }
+            .btn {
+                font-size: 0.85rem;
+                padding: 0.5rem 1rem;
+            }
+            h1 {
+                font-size: 2rem !important;
+            }
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>

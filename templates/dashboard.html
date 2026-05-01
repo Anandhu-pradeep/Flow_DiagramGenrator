@@ -60,6 +60,7 @@
 
     form#new-project-form {
         display: flex;
+        flex-wrap: wrap;
         gap: 0.5rem;
         margin-top: 2rem;
     }
@@ -83,13 +84,13 @@
 
 {% block content %}
 <div class="container">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
         <div>
-            <h1>Your Flows</h1>
-            <p style="color: var(--text-muted);">Manage and edit your logic diagrams.</p>
+            <h1 style="margin-top: 0;">Your Flows</h1>
+            <p style="color: var(--text-muted); margin-bottom: 0;">Manage and edit your logic diagrams.</p>
         </div>
-        <div>
-            <span style="color: var(--text-muted); font-size: 0.9rem;">Total Projects: {{ projects.count }}</span>
+        <div style="margin-top: 0.5rem;">
+            <span style="color: var(--text-muted); font-size: 0.9rem; background: rgba(20,12,54,0.6); padding: 0.5rem 1rem; border-radius: 999px; border: 1px solid var(--border);">Total Projects: {{ projects.count }}</span>
         </div>
     </div>
 
