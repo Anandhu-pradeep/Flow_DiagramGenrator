@@ -159,7 +159,7 @@ class ProjectListCreateAPI(generics.ListCreateAPIView):
         name = request.data.get('name')
         new_proj = Project.objects.create(name=name, user=request.user)
         # Initialize a default flowchart with the requested syntax
-        default_code = "ErStart\n1([start])\n1-2[content]\n2-\"yes\"-3{ok}\n3-\"no\"-2\n3-4([stop])\nErStop"
+        default_code = "ErStart\n1->(start)\n1-2[content]\n2-\"yes\"-3{ok}\n3-\"no\"-2\n3-4->(stop)\nErStop"
         Schema.objects.create(project=new_proj, raw_code=default_code)
         return Response({"id": new_proj.id, "name": new_proj.name}, status=status.HTTP_201_CREATED)
 

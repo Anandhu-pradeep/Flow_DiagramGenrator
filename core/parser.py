@@ -41,7 +41,15 @@ class FlowParser:
                 self.edges.append({'from': s_id, 'to': t_id, 'label': ""})
                 continue
 
-            # --- Type 3: ID([ShapeLabel]) --- (Standalone Definition)
+            # --- Type 3a: ID->(label) --- (Oval/Stadium - new syntax)
+            # e.g. 1->(start)  or  4->(stop)
+            arrow_oval = re.match(r'^(\w+)->\(([^)]+)\)\s*$', line)
+            if arrow_oval:
+                n_id, n_lbl = arrow_oval.groups()
+                self._add_node(n_id, n_lbl, '(')
+                continue
+
+            # --- Type 3b: ID([ShapeLabel]) --- (Standalone Definition, legacy)
             # e.g. 1([start])
             standalone_node = re.match(r'^(\w+)([\[\{\(])([^\]\}\)]+)([\]\}\)])\s*$', line)
             if standalone_node:
