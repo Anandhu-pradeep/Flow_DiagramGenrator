@@ -31,6 +31,7 @@ urlpatterns = [
     path('organizations/create/', views.org_create_view, name='org_create'),
     path('organizations/<slug:slug>/', views.org_dashboard_view, name='org_dashboard'),
     path('organizations/<slug:slug>/projects/', views.org_projects_view, name='org_projects'),
+    path('organizations/<slug:slug>/projects/<int:project_id>/delete/', views.delete_org_project_view, name='org_project_delete'),
     path('organizations/<slug:slug>/invite/', views.org_invite_view, name='org_invite'),
     path('organizations/<slug:slug>/member/<int:member_id>/role/', views.org_change_role_view, name='org_change_role'),
     path('organizations/<slug:slug>/member/<int:member_id>/remove/', views.org_remove_member_view, name='org_remove_member'),

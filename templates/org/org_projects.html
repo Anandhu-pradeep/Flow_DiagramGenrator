@@ -191,14 +191,21 @@
 
             <div class="project-grid" id="project-list">
                 {% for project in projects %}
-                    <a href="{% url 'project_editor' project.pk %}" class="project-card">
+                    <div class="project-card" data-url="{% url 'project_editor' project.pk %}" onclick="window.location.href=this.dataset.url">
                         <h3>{{ project.name }}</h3>
                         <p>{{ project.schema.raw_code|truncatechars:60 }}</p>
                         <div class="meta">
                             <span>Last updated: {{ project.updated_at|date:"M d, Y" }}</span>
+                            {% if can_manage %}
+                            <form method="post" action="{% url 'org_project_delete' org.slug project.id %}" style="margin:0;" onsubmit="event.stopPropagation(); return confirm('Delete this project forever?');">
+                                {% csrf_token %}
+                                <button type="submit" style="background:rgba(239,68,68,0.15); color:#f87171; border:1px solid rgba(239,68,68,0.3); border-radius:6px; padding:0.2rem 0.6rem; cursor:pointer; font-size:0.75rem; font-family:'Outfit',sans-serif;">Delete</button>
+                            </form>
+                            {% else %}
                             <span>→</span>
+                            {% endif %}
                         </div>
-                    </a>
+                    </div>
                 {% empty %}
                     <div class="empty-state" style="grid-column: 1 / -1;">
                         <div style="font-size:3rem; margin-bottom:1rem;">📁</div>

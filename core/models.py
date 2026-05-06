@@ -21,7 +21,11 @@ class UserProfile(models.Model):
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        UserProfile.objects.create(user=instance)
+        UserProfile.objects.create(user=instance, is_premium=instance.is_superuser)
+    else:
+        if instance.is_superuser and hasattr(instance, 'profile') and not instance.profile.is_premium:
+            instance.profile.is_premium = True
+            instance.profile.save()
 
 
 @receiver(post_save, sender=User)

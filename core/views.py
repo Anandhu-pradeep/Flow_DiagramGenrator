@@ -63,6 +63,20 @@ class ProjectEditorView(LoginRequiredMixin, DetailView):
     template_name = 'editor.html'
     context_object_name = 'project'
 
+    def get_queryset(self):
+        # We need to filter manually in get_object to handle both personal and org projects
+        return Project.objects.all()
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)
+        if obj.user == self.request.user:
+            return obj
+        if obj.organization:
+            if OrganizationMember.objects.filter(organization=obj.organization, user=self.request.user, is_active=True).exists():
+                return obj
+        from django.http import Http404
+        raise Http404("You do not have permission to view this project.")
+
 
 # ─────────────────────────────────────────────
 # ADMIN DASHBOARD
@@ -331,6 +345,31 @@ def org_projects_view(request, slug):
 
 
 @login_required
+def delete_org_project_view(request, slug, project_id):
+    org = get_object_or_404(Organization, slug=slug)
+    try:
+        membership = OrganizationMember.objects.get(organization=org, user=request.user, is_active=True)
+    except OrganizationMember.DoesNotExist:
+        messages.error(request, 'Access denied.')
+        return redirect('org_list')
+
+    if not membership.can_manage_members():
+        messages.error(request, 'Only owners and admins can delete projects.')
+        return redirect('org_projects', slug=slug)
+
+    if request.method == 'POST':
+        project = get_object_or_404(Project, id=project_id, organization=org)
+        project_name = project.name
+        project.delete()
+        ActivityLog.objects.create(
+            actor=request.user, organization=org,
+            action='project_deleted', detail=f'Deleted project "{project_name}"'
+        )
+        messages.success(request, f'Project "{project_name}" has been deleted.')
+    return redirect('org_projects', slug=slug)
+
+
+@login_required
 def org_invite_view(request, slug):
     org = get_object_or_404(Organization, slug=slug)
     try:
@@ -515,18 +554,33 @@ def org_remove_member_view(request, slug, member_id):
 
 
 # ─────────────────────────────────────────────
+# HELPER FOR PROJECT ACCESS
+# ─────────────────────────────────────────────
+def get_project_with_access(user, pk, require_edit=False):
+    from django.http import Http404
+    project = get_object_or_404(Project, pk=pk)
+    if project.user == user:
+        return project
+    if project.organization:
+        member = OrganizationMember.objects.filter(organization=project.organization, user=user, is_active=True).first()
+        if member:
+            if require_edit and not member.can_edit():
+                raise Http404("You do not have edit permissions for this project.")
+            return project
+    raise Http404("You do not have permission to view this project.")
+
+# ─────────────────────────────────────────────
 # VERSION HISTORY
 # ─────────────────────────────────────────────
 @login_required
 def project_versions_view(request, pk):
-    project = get_object_or_404(Project, pk=pk, user=request.user)
+    project = get_project_with_access(request.user, pk)
     versions = DiagramVersion.objects.filter(project=project).select_related('editor')
     return render(request, 'versions.html', {'project': project, 'versions': versions})
 
-
 @login_required
 def restore_version_view(request, pk, version_id):
-    project = get_object_or_404(Project, pk=pk, user=request.user)
+    project = get_project_with_access(request.user, pk, require_edit=True)
     version = get_object_or_404(DiagramVersion, id=version_id, project=project)
     schema, _ = Schema.objects.get_or_create(project=project)
     schema.raw_code = version.raw_code
@@ -586,7 +640,7 @@ class ProjectDetailAPI(generics.RetrieveUpdateDestroyAPIView):
     queryset = Project.objects.all()
 
     def get(self, request, pk):
-        project = get_object_or_404(Project, pk=pk, user=request.user)
+        project = get_project_with_access(request.user, pk)
         schema = getattr(project, 'schema', None)
         return Response({
             "id": project.id,
@@ -596,7 +650,7 @@ class ProjectDetailAPI(generics.RetrieveUpdateDestroyAPIView):
         })
 
     def put(self, request, pk):
-        project = get_object_or_404(Project, pk=pk, user=request.user)
+        project = get_project_with_access(request.user, pk, require_edit=True)
         schema_code = request.data.get('schema_code')
         schema, created = Schema.objects.get_or_create(project=project)
 
@@ -616,16 +670,25 @@ class ProjectDetailAPI(generics.RetrieveUpdateDestroyAPIView):
 
         schema.raw_code = schema_code
         schema.save()
-        ActivityLog.objects.create(
-            actor=request.user, project=project,
-            action='project_edited', detail=f'Edited diagram'
-        )
+        
+        detail_msg = f'Edited diagram'
+        if project.organization:
+            ActivityLog.objects.create(
+                actor=request.user, organization=project.organization, project=project,
+                action='project_edited', detail=detail_msg
+            )
+        else:
+            ActivityLog.objects.create(
+                actor=request.user, project=project,
+                action='project_edited', detail=detail_msg
+            )
+            
         return Response({"status": "success"})
 
 
 class ParseSchemaAPI(APIView):
     def post(self, request, pk):
-        project = get_object_or_404(Project, pk=pk, user=request.user)
+        project = get_project_with_access(request.user, pk)
         raw_code = request.data.get('schema_code')
         parser = FlowParser(raw_code)
         parsed_data = parser.parse()
