@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+/* ── Layout ── */
+.org-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+    align-items: start;
+}
+@media (max-width: 900px) { .org-layout { grid-template-columns: 1fr; } }
+
+/* ── Sidebar ── */
+.org-sidebar {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    position: sticky;
+    top: 80px;
+}
+.org-sidebar-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.org-big-avatar {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; font-weight: 700; color: white; flex-shrink: 0;
+}
+.org-title { font-size: 1.1rem; font-weight: 700; }
+.org-desc { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem; }
+.sidebar-nav { padding: 0.75rem 0; }
+.sidebar-nav-item {
+    display: block;
+    padding: 0.65rem 1.5rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+.sidebar-nav-item:hover, .sidebar-nav-item.active {
+    color: white;
+    background: rgba(143,1,119,0.15);
+    border-left: 3px solid var(--secondary);
+}
+
+/* ── Main Content ── */
+.projects-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+#new-project-form {
+    display: flex;
+    gap: 1rem;
+    background: var(--bg-card);
+    padding: 1.25rem;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+}
+
+#project-name {
+    flex: 1;
+    padding: 0.8rem 1rem;
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: white;
+    font-size: 0.95rem;
+    font-family: 'Outfit', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+}
+#project-name:focus {
+    border-color: var(--secondary);
+}
+
+.project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.project-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.project-card:hover {
+    border-color: var(--secondary);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px rgba(143,1,119,0.2);
+}
+
+.project-card h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.2rem;
+    color: var(--text-light);
+}
+
+.project-card p {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+    height: 40px;
+    overflow: hidden;
+}
+
+.project-card .meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: rgba(168,156,200,0.6);
+    border-top: 1px solid rgba(42,31,92,0.4);
+    padding-top: 1rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--bg-card);
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    color: var(--text-muted);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:1300px;">
+    <!-- Breadcrumb -->
+    <div style="margin-bottom:1rem; font-size:0.85rem; color:var(--text-muted);">
+        <a href="{% url 'org_list' %}" style="color:var(--text-muted);text-decoration:none;">Organizations</a>
+        <span style="margin:0 0.5rem;">›</span>
+        <a href="{% url 'org_dashboard' org.slug %}" style="color:var(--text-muted);text-decoration:none;">{{ org.name }}</a>
+        <span style="margin:0 0.5rem;">›</span>
+        <span style="color:var(--text-light);">Projects</span>
+    </div>
+
+    <div class="org-layout">
+        <!-- ── Sidebar ── -->
+        <aside class="org-sidebar">
+            <div class="org-sidebar-header">
+                <div class="org-big-avatar">{{ org.name|first|upper }}</div>
+                <div>
+                    <div class="org-title">{{ org.name }}</div>
+                    <div class="org-desc">{{ membership.role|capfirst }}</div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{% url 'org_dashboard' org.slug %}" class="sidebar-nav-item">📊 Dashboard</a>
+                <span class="sidebar-nav-item active">📁 Projects</span>
+                {% if can_manage %}
+                <a href="{% url 'org_invite' org.slug %}" class="sidebar-nav-item">✉️ Invite Members</a>
+                {% endif %}
+            </nav>
+        </aside>
+
+        <!-- ── Main Content ── -->
+        <main>
+            <div class="projects-header">
+                <h2 style="margin:0;">Organization Projects</h2>
+            </div>
+
+            {% if can_edit %}
+            <form id="new-project-form" onsubmit="createOrgProject(event)">
+                <input type="text" id="project-name" placeholder="Enter Flow Name (e.g. Org Architecture)" required>
+                <button type="submit" class="btn btn-primary">+ Create Project</button>
+            </form>
+            {% endif %}
+
+            <div class="project-grid" id="project-list">
+                {% for project in projects %}
+                    <a href="{% url 'project_editor' project.pk %}" class="project-card">
+                        <h3>{{ project.name }}</h3>
+                        <p>{{ project.schema.raw_code|truncatechars:60 }}</p>
+                        <div class="meta">
+                            <span>Last updated: {{ project.updated_at|date:"M d, Y" }}</span>
+                            <span>→</span>
+                        </div>
+                    </a>
+                {% empty %}
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <div style="font-size:3rem; margin-bottom:1rem;">📁</div>
+                        <h3>No projects yet</h3>
+                        <p>Create a project to start collaborating with your team.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function createOrgProject(e) {
+        e.preventDefault();
+        const projectName = document.getElementById('project-name').value;
+        const orgId = {{ org.id }};
+        
+        const response = await fetch('/api/projects/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ name: projectName, org_id: orgId })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            window.location.href = `/project/${data.id}/`;
+        } else {
+            alert('Error creating project. Please try again.');
+        }
+    }
+</script>
+{% endblock %}

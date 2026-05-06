@@ -209,7 +209,8 @@
                 </div>
             </div>
             <nav class="sidebar-nav">
-                <span class="sidebar-nav-item active">📊 Dashboard</span>
+                <a href="{% url 'org_dashboard' org.slug %}" class="sidebar-nav-item active">📊 Dashboard</a>
+                <a href="{% url 'org_projects' org.slug %}" class="sidebar-nav-item">📁 Projects</a>
                 {% if can_manage %}
                 <a href="{% url 'org_invite' org.slug %}" class="sidebar-nav-item">✉️ Invite Members</a>
                 {% endif %}

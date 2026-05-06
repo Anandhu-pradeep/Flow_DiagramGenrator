@@ -311,6 +311,26 @@ def org_dashboard_view(request, slug):
 
 
 @login_required
+def org_projects_view(request, slug):
+    org = get_object_or_404(Organization, slug=slug)
+    try:
+        membership = OrganizationMember.objects.get(organization=org, user=request.user, is_active=True)
+    except OrganizationMember.DoesNotExist:
+        messages.error(request, 'Access denied.')
+        return redirect('org_list')
+
+    projects = Project.objects.filter(organization=org).order_by('-updated_at')
+
+    return render(request, 'org/org_projects.html', {
+        'org': org,
+        'membership': membership,
+        'projects': projects,
+        'can_manage': membership.can_manage_members(),
+        'can_edit': membership.can_edit(),
+    })
+
+
+@login_required
 def org_invite_view(request, slug):
     org = get_object_or_404(Organization, slug=slug)
     try:
@@ -528,13 +548,37 @@ class ProjectListCreateAPI(generics.ListCreateAPIView):
 
     def post(self, request):
         name = request.data.get('name')
+        org_id = request.data.get('org_id')
+
         new_proj = Project.objects.create(name=name, user=request.user)
+
+        if org_id:
+            try:
+                org = Organization.objects.get(id=org_id)
+                member = OrganizationMember.objects.filter(organization=org, user=request.user, is_active=True).first()
+                if member and member.can_edit():
+                    new_proj.organization = org
+                    new_proj.is_shared = True
+                    new_proj.save()
+            except Organization.DoesNotExist:
+                pass
+
         default_code = "ErStart\n1->(start)\n1-2[content]\n2-\"yes\"-3{ok}\n3-\"no\"-2\n3-4->(stop)\nErStop"
         Schema.objects.create(project=new_proj, raw_code=default_code)
-        ActivityLog.objects.create(
-            actor=request.user, project=new_proj,
-            action='project_created', detail=f'Created project "{name}"'
-        )
+        
+        detail_msg = f'Created project "{name}"'
+        if new_proj.organization:
+            detail_msg += f' in organization'
+            ActivityLog.objects.create(
+                actor=request.user, organization=new_proj.organization, project=new_proj,
+                action='project_created', detail=detail_msg
+            )
+        else:
+            ActivityLog.objects.create(
+                actor=request.user, project=new_proj,
+                action='project_created', detail=detail_msg
+            )
+
         return Response({"id": new_proj.id, "name": new_proj.name}, status=status.HTTP_201_CREATED)
 
 
