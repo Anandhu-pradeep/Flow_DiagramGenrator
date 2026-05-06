@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+.org-hero {
+    text-align: center;
+    padding: 3rem 1rem 2rem;
+}
+.org-hero h1 {
+    font-size: 2.5rem;
+    background: linear-gradient(to right, var(--secondary), var(--accent), var(--highlight));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+}
+.org-hero p { color: var(--text-muted); font-size: 1.05rem; }
+
+.org-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.org-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    transition: all 0.3s;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+.org-card:hover {
+    border-color: var(--secondary);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px rgba(143,1,119,0.2);
+}
+.org-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+.org-avatar {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; font-weight: 700; color: white; flex-shrink: 0;
+}
+.org-name { font-size: 1.1rem; font-weight: 700; }
+.org-role-badge {
+    display: inline-block;
+    background: rgba(143,1,119,0.2);
+    color: var(--secondary);
+    border: 1px solid rgba(143,1,119,0.3);
+    border-radius: 999px;
+    padding: 0.15rem 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+.org-meta { color: var(--text-muted); font-size: 0.85rem; margin-top: 0.5rem; }
+
+.premium-gate {
+    background: var(--bg-card);
+    border: 1px dashed var(--border);
+    border-radius: 14px;
+    padding: 3rem 2rem;
+    text-align: center;
+    margin-top: 2rem;
+}
+.premium-gate .lock { font-size: 3rem; margin-bottom: 1rem; }
+.premium-gate h3 { color: var(--text-light); margin-bottom: 0.5rem; }
+.premium-gate p { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem; }
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-muted);
+}
+.empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="org-hero">
+        <h1>🏢 Organizations</h1>
+        <p>Collaborate with your team in shared workspaces.</p>
+    </div>
+
+    {% if is_premium %}
+        <div style="text-align:right; margin-bottom:1rem;">
+            <a href="{% url 'org_create' %}" class="btn btn-primary">+ New Organization</a>
+        </div>
+
+        {% if memberships %}
+        <div class="org-grid">
+            {% for m in memberships %}
+            <a href="{% url 'org_dashboard' m.organization.slug %}" class="org-card">
+                <div class="org-card-header">
+                    <div class="org-avatar">{{ m.organization.name|first|upper }}</div>
+                    <div>
+                        <div class="org-name">{{ m.organization.name }}</div>
+                        <span class="org-role-badge">{{ m.role }}</span>
+                    </div>
+                </div>
+                <div class="org-meta">
+                    👥 {{ m.organization.member_count }} members &nbsp;·&nbsp;
+                    📁 {{ m.organization.active_project_count }} projects
+                </div>
+                {% if m.organization.description %}
+                <p style="font-size:0.85rem;color:var(--text-muted);margin-top:0.75rem;margin-bottom:0;">
+                    {{ m.organization.description|truncatechars:80 }}
+                </p>
+                {% endif %}
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="icon">🏢</div>
+            <h3>No Organizations Yet</h3>
+            <p>Create your first organization or wait for an invite from a team member.</p>
+            <a href="{% url 'org_create' %}" class="btn btn-primary" style="margin-top:1rem;">Create Organization</a>
+        </div>
+        {% endif %}
+
+    {% else %}
+        <div class="premium-gate">
+            <div class="lock">🔒</div>
+            <h3>Premium Feature</h3>
+            <p>Unlock Premium to Access Organization Features.<br>
+               Create teams, invite members, collaborate in real-time, and manage shared diagrams.</p>
+            <span class="premium-badge">⭐ PREMIUM REQUIRED</span>
+            <br><br>
+            <p style="font-size:0.8rem; color:var(--text-muted);">
+                You can still join organizations if a premium member invites you!
+            </p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

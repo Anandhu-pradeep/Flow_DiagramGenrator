@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+.versions-container { max-width: 760px; margin: 0 auto; }
+.versions-container h1 {
+    background: linear-gradient(to right, var(--secondary), var(--accent));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+}
+.versions-container .sub { color:var(--text-muted); margin-bottom:2rem; font-size:0.9rem; }
+
+.version-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: border-color 0.2s;
+}
+.version-card:hover { border-color: var(--secondary); }
+.version-num {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--secondary);
+    min-width: 36px;
+}
+.version-info { flex: 1; }
+.version-editor { font-weight: 600; font-size:0.92rem; }
+.version-time { font-size:0.8rem; color:var(--text-muted); }
+.version-preview {
+    font-size:0.78rem;
+    color: rgba(168,156,200,0.7);
+    font-family: monospace;
+    margin-top:0.3rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 300px;
+}
+.btn-restore {
+    background: rgba(26,5,162,0.25);
+    color: var(--text-light);
+    border: 1px solid rgba(26,5,162,0.4);
+    border-radius: 7px;
+    padding: 0.4rem 0.9rem;
+    font-size:0.82rem;
+    font-weight:600;
+    cursor: pointer;
+    font-family: 'Outfit', sans-serif;
+    transition: all 0.2s;
+}
+.btn-restore:hover {
+    background: rgba(26,5,162,0.5);
+    border-color: var(--primary);
+}
+.empty-state {
+    text-align:center; padding:3rem; color:var(--text-muted);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+<div class="versions-container">
+    <div style="margin-bottom:1rem; font-size:0.85rem; color:var(--text-muted);">
+        <a href="{% url 'dashboard' %}" style="color:var(--text-muted);text-decoration:none;">Dashboard</a>
+        <span style="margin:0 0.5rem;">›</span>
+        <a href="{% url 'project_editor' project.pk %}" style="color:var(--text-muted);text-decoration:none;">{{ project.name }}</a>
+        <span style="margin:0 0.5rem;">›</span>
+        <span style="color:var(--text-light);">Version History</span>
+    </div>
+
+    <h1>🕐 Version History</h1>
+    <p class="sub">Auto-saved snapshots of "{{ project.name }}". Restore any previous version.</p>
+
+    {% if versions %}
+    {% for v in versions %}
+    <div class="version-card">
+        <div class="version-num">v{{ v.version_number }}</div>
+        <div class="version-info">
+            <div class="version-editor">
+                Edited by @{{ v.editor.username|default:"Unknown" }}
+            </div>
+            <div class="version-time">{{ v.created_at|date:"M d, Y H:i" }}</div>
+            <div class="version-preview">{{ v.raw_code|truncatechars:80 }}</div>
+        </div>
+        <form method="post" action="{% url 'restore_version' project.pk v.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-restore"
+                onclick="return confirm('Restore this version? Current code will be saved as a new version.')">
+                ↩ Restore
+            </button>
+        </form>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="empty-state">
+        <div style="font-size:3rem;margin-bottom:1rem;">🕐</div>
+        <h3>No versions yet</h3>
+        <p>Versions are auto-saved every time you save a diagram.</p>
+    </div>
+    {% endif %}
+</div>
+</div>
+{% endblock %}

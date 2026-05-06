@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlowCraft - Flow Diagram Generator</title>
+    <title>SchemaCraft - Flow Diagram Generator</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
     <style>
@@ -22,32 +22,32 @@
         }
 
         body {
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             font-family: 'Outfit', sans-serif;
             background-color: var(--bg-dark);
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(26, 5, 162, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 0%, rgba(143, 1, 119, 0.1) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(246, 125, 49, 0.05) 0px, transparent 50%),
-                radial-gradient(at 0% 100%, rgba(222, 26, 88, 0.1) 0px, transparent 50%);
+            background-image:
+                radial-gradient(at 0% 0%, rgba(26,5,162,0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(143,1,119,0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(246,125,49,0.05) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(222,26,88,0.1) 0px, transparent 50%);
             background-attachment: fixed;
             color: var(--text-light);
             line-height: 1.6;
             min-height: 100vh;
         }
 
+        /* ── NAVBAR ─────────────────────────────── */
         .navbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 1rem 2rem;
-            background: rgba(17, 13, 46, 0.8);
+            background: rgba(17,13,46,0.85);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 200;
         }
 
         .navbar-brand {
@@ -62,7 +62,7 @@
 
         .nav-links {
             display: flex;
-            gap: 1.5rem;
+            gap: 1.25rem;
             align-items: center;
         }
 
@@ -73,31 +73,41 @@
             transition: color 0.3s;
         }
 
-        .nav-link:hover {
-            color: var(--primary);
-        }
+        .nav-link:hover { color: var(--secondary); }
 
+        /* ── BUTTONS ─────────────────────────────── */
         .btn {
             padding: 0.5rem 1.25rem;
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
             text-decoration: none;
             display: inline-block;
             border: none;
             font-size: 0.9rem;
+            font-family: 'Outfit', sans-serif;
         }
 
         .btn-primary {
             background: linear-gradient(135deg, #1A05A2, #8F0177);
             color: white;
         }
-
         .btn-primary:hover {
             background: linear-gradient(135deg, #150480, #6d015c);
             transform: translateY(-2px);
             box-shadow: 0 4px 16px rgba(26,5,162,0.4);
+        }
+
+        .btn-org {
+            background: linear-gradient(135deg, #8F0177, #DE1A58);
+            color: white;
+            border-radius: 8px;
+        }
+        .btn-org:hover {
+            background: linear-gradient(135deg, #6d015c, #b01244);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 14px rgba(143,1,119,0.4);
         }
 
         .btn-logout {
@@ -106,13 +116,159 @@
             border-radius: 999px;
             padding: 0.45rem 1.3rem;
         }
-
         .btn-logout:hover {
             background: linear-gradient(135deg, #b91c1c, #8b0000);
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(222,26,88,0.35);
         }
 
+        /* ── NOTIFICATION BELL ───────────────────── */
+        .notif-bell-wrapper {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .notif-bell {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(143,1,119,0.15);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+        .notif-bell:hover {
+            background: rgba(143,1,119,0.3);
+            border-color: var(--secondary);
+            color: white;
+        }
+
+        .notif-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: var(--accent);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse-badge 2s infinite;
+        }
+        @keyframes pulse-badge {
+            0%,100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        .notif-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            width: 340px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            display: none;
+            z-index: 500;
+            overflow: hidden;
+        }
+        .notif-dropdown.open { display: block; animation: dropIn 0.2s ease; }
+
+        @keyframes dropIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .notif-header {
+            padding: 0.9rem 1.1rem;
+            border-bottom: 1px solid var(--border);
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .notif-header a {
+            font-size: 0.75rem;
+            color: var(--secondary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .notif-list { max-height: 360px; overflow-y: auto; }
+
+        .notif-item {
+            padding: 0.85rem 1.1rem;
+            border-bottom: 1px solid rgba(42,31,92,0.5);
+            transition: background 0.2s;
+        }
+        .notif-item:last-child { border-bottom: none; }
+        .notif-item:hover { background: rgba(143,1,119,0.08); }
+        .notif-item.unread { border-left: 3px solid var(--secondary); }
+
+        .notif-item-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+        }
+        .notif-item-msg {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-bottom: 0.3rem;
+        }
+        .notif-item-time {
+            font-size: 0.72rem;
+            color: rgba(168,156,200,0.6);
+        }
+        .notif-actions {
+            display: flex;
+            gap: 0.4rem;
+            margin-top: 0.5rem;
+        }
+        .btn-accept {
+            background: rgba(16,185,129,0.2);
+            color: #34d399;
+            border: 1px solid #10b981;
+            border-radius: 6px;
+            padding: 0.25rem 0.65rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .btn-accept:hover { background: rgba(16,185,129,0.4); }
+        .btn-reject {
+            background: rgba(239,68,68,0.2);
+            color: #f87171;
+            border: 1px solid #ef4444;
+            border-radius: 6px;
+            padding: 0.25rem 0.65rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .btn-reject:hover { background: rgba(239,68,68,0.4); }
+
+        .notif-empty {
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* ── LAYOUT ─────────────────────────────── */
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -124,21 +280,61 @@
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 2rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
         }
 
-        h1, h2, h3 { font-weight: 700; }
-        
-        /* Modern Scrollbar */
+        h1,h2,h3 { font-weight: 700; }
+
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: var(--bg-dark); }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
+        /* ── ALERTS ─────────────────────────────── */
         .alert { padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
-        .alert-success { background-color: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
-        .alert-info { background-color: rgba(99, 102, 241, 0.2); color: #818cf8; border: 1px solid #6366f1; }
-        .alert-error { background-color: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+        .alert-success { background-color: rgba(16,185,129,0.2); color: #34d399; border: 1px solid #10b981; }
+        .alert-info    { background-color: rgba(99,102,241,0.2); color: #818cf8; border: 1px solid #6366f1; }
+        .alert-error   { background-color: rgba(239,68,68,0.2); color: #f87171; border: 1px solid #ef4444; }
+
+        /* ── PREMIUM LOCK ───────────────────────── */
+        .premium-lock {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+        .premium-lock-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(5,3,20,0.85);
+            backdrop-filter: blur(4px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            border-radius: 12px;
+            z-index: 10;
+        }
+        .premium-lock-overlay .lock-icon { font-size: 2rem; }
+        .premium-lock-overlay p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            text-align: center;
+            margin: 0;
+            padding: 0 1rem;
+        }
+        .premium-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            background: linear-gradient(135deg, #F67D31, #DE1A58);
+            color: white;
+            padding: 0.2rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
 
         footer {
             text-align: center;
@@ -148,28 +344,14 @@
             margin-top: 4rem;
         }
 
-        /* Mobile Responsiveness */
+        /* ── RESPONSIVE ─────────────────────────── */
         @media (max-width: 768px) {
-            .navbar {
-                flex-direction: column;
-                padding: 1rem;
-                gap: 1rem;
-            }
-            .nav-links {
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 1rem;
-            }
-            .container {
-                padding: 1rem;
-            }
-            .btn {
-                font-size: 0.85rem;
-                padding: 0.5rem 1rem;
-            }
-            h1 {
-                font-size: 2rem !important;
-            }
+            .navbar { flex-direction: column; padding: 1rem; gap: 1rem; }
+            .nav-links { flex-wrap: wrap; justify-content: center; gap: 0.75rem; }
+            .container { padding: 1rem; }
+            .btn { font-size: 0.85rem; padding: 0.5rem 1rem; }
+            h1 { font-size: 2rem !important; }
+            .notif-dropdown { width: 290px; right: -50px; }
         }
     </style>
     {% block extra_css %}{% endblock %}
@@ -180,9 +362,28 @@
         <div class="nav-links">
             {% if user.is_authenticated %}
                 <a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a>
+                <a href="{% url 'org_list' %}" class="nav-link">Organizations</a>
                 {% if user.is_superuser %}
                 <a href="{% url 'admin_dashboard' %}" class="nav-link" style="color: #F67D31;">Admin</a>
                 {% endif %}
+
+                <!-- Notification Bell -->
+                <div class="notif-bell-wrapper" id="notifWrapper">
+                    <div class="notif-bell" id="notifBell" onclick="toggleNotifDropdown()">
+                        🔔
+                    </div>
+                    <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
+                    <div class="notif-dropdown" id="notifDropdown">
+                        <div class="notif-header">
+                            <span>Notifications</span>
+                            <a href="{% url 'notifications' %}">View All</a>
+                        </div>
+                        <div class="notif-list" id="notifList">
+                            <div class="notif-empty">Loading…</div>
+                        </div>
+                    </div>
+                </div>
+
                 <a href="{% url 'profile' %}" class="nav-link" title="My Profile" style="display:flex;align-items:center;gap:0.4rem;">
                     <span style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#1A05A2,#8F0177,#DE1A58);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;color:#fff;flex-shrink:0;">
                         {{ user.username|first|upper }}
@@ -215,18 +416,88 @@
     </main>
 
     <footer>
-        <p>&copy; 2026 FlowCraft. Simplified Logic Design.</p>
+        <p>&copy; 2026 SchemaCraft. Simplified Logic Design.</p>
     </footer>
 
     <script>
-        mermaid.initialize({ 
-            startOnLoad: true, 
+        mermaid.initialize({
+            startOnLoad: true,
             theme: 'dark',
-            er: {
-                useMaxWidth: true,
-                diagramPadding: 20
+            er: { useMaxWidth: true, diagramPadding: 20 }
+        });
+
+        // ── Notification Bell Logic ──────────────
+        {% if user.is_authenticated %}
+        let notifOpen = false;
+
+        function toggleNotifDropdown() {
+            notifOpen = !notifOpen;
+            document.getElementById('notifDropdown').classList.toggle('open', notifOpen);
+            if (notifOpen) loadNotifications();
+        }
+
+        // Close on outside click
+        document.addEventListener('click', function(e) {
+            const wrapper = document.getElementById('notifWrapper');
+            if (wrapper && !wrapper.contains(e.target)) {
+                notifOpen = false;
+                document.getElementById('notifDropdown').classList.remove('open');
             }
         });
+
+        async function loadNotifications() {
+            try {
+                const res = await fetch('{% url "api_notifications" %}');
+                const data = await res.json();
+
+                const badge = document.getElementById('notifBadge');
+                if (data.unread_count > 0) {
+                    badge.style.display = 'flex';
+                    badge.textContent = data.unread_count > 9 ? '9+' : data.unread_count;
+                } else {
+                    badge.style.display = 'none';
+                }
+
+                const list = document.getElementById('notifList');
+                if (!data.notifications.length) {
+                    list.innerHTML = '<div class="notif-empty">No notifications yet 🎉</div>';
+                    return;
+                }
+
+                list.innerHTML = data.notifications.map(n => `
+                    <div class="notif-item ${n.is_read ? '' : 'unread'}">
+                        <div class="notif-item-title">${n.title}</div>
+                        <div class="notif-item-msg">${n.message}</div>
+                        <div class="notif-item-time">${n.sender} · ${n.created_at}</div>
+                        ${n.type === 'org_invite' && n.invitation_id ? `
+                            <div class="notif-actions">
+                                <a href="/invite/${n.invitation_id}/accept/" class="btn-accept">✓ Accept</a>
+                                <a href="/invite/${n.invitation_id}/reject/" class="btn-reject">✗ Reject</a>
+                            </div>` : ''}
+                    </div>
+                `).join('');
+            } catch(e) {
+                document.getElementById('notifList').innerHTML = '<div class="notif-empty">Failed to load.</div>';
+            }
+        }
+
+        // Poll unread count every 30s
+        async function pollNotifCount() {
+            try {
+                const res = await fetch('{% url "api_notifications" %}');
+                const data = await res.json();
+                const badge = document.getElementById('notifBadge');
+                if (data.unread_count > 0) {
+                    badge.style.display = 'flex';
+                    badge.textContent = data.unread_count > 9 ? '9+' : data.unread_count;
+                } else {
+                    badge.style.display = 'none';
+                }
+            } catch(e) {}
+        }
+        pollNotifCount();
+        setInterval(pollNotifCount, 30000);
+        {% endif %}
     </script>
     {% block extra_js %}{% endblock %}
 </body>

@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+/* ── Layout ── */
+.org-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+    align-items: start;
+}
+@media (max-width: 900px) { .org-layout { grid-template-columns: 1fr; } }
+
+/* ── Sidebar ── */
+.org-sidebar {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    position: sticky;
+    top: 80px;
+}
+.org-sidebar-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.org-big-avatar {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; font-weight: 700; color: white; flex-shrink: 0;
+}
+.org-title { font-size: 1.1rem; font-weight: 700; }
+.org-desc { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem; }
+.sidebar-nav { padding: 0.75rem 0; }
+.sidebar-nav-item {
+    display: block;
+    padding: 0.65rem 1.5rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+.sidebar-nav-item:hover, .sidebar-nav-item.active {
+    color: white;
+    background: rgba(143,1,119,0.15);
+    border-left: 3px solid var(--secondary);
+}
+.sidebar-meta {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 2;
+}
+
+/* ── Stats Row ── */
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-align: center;
+}
+.stat-num { font-size: 1.8rem; font-weight: 700; color: var(--secondary); }
+.stat-label { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+/* ── Section cards ── */
+.section-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+.section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0 0 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-light);
+}
+
+/* ── Members table ── */
+.member-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(42,31,92,0.4);
+}
+.member-row:last-child { border-bottom: none; }
+.member-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; font-weight: 700; color: white; flex-shrink: 0;
+}
+.member-info { flex: 1; }
+.member-name { font-size: 0.9rem; font-weight: 600; }
+.member-username { font-size: 0.78rem; color: var(--text-muted); }
+.role-select {
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: white;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+}
+.btn-sm-danger {
+    background: rgba(239,68,68,0.15);
+    color: #f87171;
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 6px;
+    padding: 0.3rem 0.65rem;
+    font-size: 0.78rem;
+    cursor: pointer;
+    font-family: 'Outfit', sans-serif;
+    transition: background 0.2s;
+}
+.btn-sm-danger:hover { background: rgba(239,68,68,0.3); }
+
+/* ── Activity ── */
+.activity-item {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid rgba(42,31,92,0.4);
+    font-size: 0.85rem;
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--secondary);
+    margin-top: 6px;
+    flex-shrink: 0;
+}
+.activity-text { flex: 1; color: var(--text-muted); }
+.activity-text strong { color: var(--text-light); }
+.activity-time { font-size: 0.75rem; color: rgba(168,156,200,0.6); }
+
+/* ── Pending invites ── */
+.invite-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid rgba(42,31,92,0.4);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+.invite-row:last-child { border-bottom: none; }
+.invite-row strong { color: var(--text-light); }
+
+/* ── Shared projects ── */
+.proj-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(26,5,162,0.2);
+    border: 1px solid rgba(26,5,162,0.3);
+    border-radius: 8px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: all 0.2s;
+    margin: 0.25rem;
+}
+.proj-chip:hover { border-color: var(--primary); color: white; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:1300px;">
+    <!-- Breadcrumb -->
+    <div style="margin-bottom:1rem; font-size:0.85rem; color:var(--text-muted);">
+        <a href="{% url 'org_list' %}" style="color:var(--text-muted);text-decoration:none;">Organizations</a>
+        <span style="margin:0 0.5rem;">›</span>
+        <span style="color:var(--text-light);">{{ org.name }}</span>
+    </div>
+
+    <div class="org-layout">
+        <!-- ── Sidebar ── -->
+        <aside class="org-sidebar">
+            <div class="org-sidebar-header">
+                <div class="org-big-avatar">{{ org.name|first|upper }}</div>
+                <div>
+                    <div class="org-title">{{ org.name }}</div>
+                    <div class="org-desc">{{ membership.role|capfirst }}</div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <span class="sidebar-nav-item active">📊 Dashboard</span>
+                {% if can_manage %}
+                <a href="{% url 'org_invite' org.slug %}" class="sidebar-nav-item">✉️ Invite Members</a>
+                {% endif %}
+            </nav>
+            <div class="sidebar-meta">
+                👑 Owner: {{ org.owner.username }}<br>
+                📅 Created: {{ org.created_at|date:"M d, Y" }}<br>
+                👥 {{ members.count }} member{{ members.count|pluralize }}
+            </div>
+        </aside>
+
+        <!-- ── Main Content ── -->
+        <main>
+            <!-- Stats -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-num">{{ members.count }}</div>
+                    <div class="stat-label">Members</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num">{{ shared_projects.count }}</div>
+                    <div class="stat-label">Projects</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num">{{ pending_invites.count }}</div>
+                    <div class="stat-label">Pending Invites</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num">{{ activity.count }}</div>
+                    <div class="stat-label">Activities</div>
+                </div>
+            </div>
+
+            <!-- Members -->
+            <div class="section-card">
+                <div class="section-title">
+                    👥 Team Members
+                    {% if can_manage %}
+                    <a href="{% url 'org_invite' org.slug %}" class="btn btn-primary" style="margin-left:auto;padding:0.3rem 0.9rem;font-size:0.8rem;">+ Invite</a>
+                    {% endif %}
+                </div>
+                {% for m in members %}
+                <div class="member-row">
+                    <div class="member-avatar">{{ m.user.username|first|upper }}</div>
+                    <div class="member-info">
+                        <div class="member-name">{{ m.user.first_name }} {{ m.user.last_name }}</div>
+                        <div class="member-username">@{{ m.user.username }}</div>
+                    </div>
+                    {% if can_manage and m.role != 'owner' %}
+                    <form method="post" action="{% url 'org_change_role' org.slug m.id %}" style="display:flex;gap:0.4rem;align-items:center;">
+                        {% csrf_token %}
+                        <select name="role" class="role-select" onchange="this.form.submit()">
+                            <option value="admin" {% if m.role == 'admin' %}selected{% endif %}>Admin</option>
+                            <option value="editor" {% if m.role == 'editor' %}selected{% endif %}>Editor</option>
+                            <option value="viewer" {% if m.role == 'viewer' %}selected{% endif %}>Viewer</option>
+                        </select>
+                    </form>
+                    <form method="post" action="{% url 'org_remove_member' org.slug m.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-sm-danger" onclick="return confirm('Remove {{ m.user.username }}?')">Remove</button>
+                    </form>
+                    {% else %}
+                    <span style="font-size:0.8rem;color:var(--text-muted);text-transform:capitalize;">{{ m.role }}</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pending Invitations -->
+            {% if pending_invites %}
+            <div class="section-card">
+                <div class="section-title">📨 Pending Invitations</div>
+                {% for inv in pending_invites %}
+                <div class="invite-row">
+                    <div class="member-avatar">{{ inv.invitee.username|first|upper }}</div>
+                    <div style="flex:1;">
+                        <strong>@{{ inv.invitee.username }}</strong> — invited as {{ inv.role }}
+                        <div style="font-size:0.75rem;color:rgba(168,156,200,0.6);">
+                            by @{{ inv.invited_by.username }} · {{ inv.created_at|date:"M d, Y" }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Shared Projects -->
+            {% if shared_projects %}
+            <div class="section-card">
+                <div class="section-title">📁 Shared Projects</div>
+                <div>
+                    {% for proj in shared_projects %}
+                    <a href="{% url 'project_editor' proj.pk %}" class="proj-chip">
+                        📄 {{ proj.name }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Activity Feed -->
+            <div class="section-card">
+                <div class="section-title">📋 Recent Activity</div>
+                {% if activity %}
+                {% for log in activity %}
+                <div class="activity-item">
+                    <div class="activity-dot"></div>
+                    <div style="flex:1;">
+                        <div class="activity-text">
+                            <strong>@{{ log.actor.username }}</strong> — {{ log.detail }}
+                        </div>
+                        <div class="activity-time">{{ log.created_at|date:"M d, Y H:i" }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p style="color:var(--text-muted);font-size:0.9rem;">No activity yet.</p>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

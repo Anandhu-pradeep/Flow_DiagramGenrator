@@ -95,6 +95,7 @@
             <button id="save-btn" class="btn btn-primary" onclick="saveSchema()">Save Flow</button>
             <button class="btn" style="background: var(--bg-card); color: white;" onclick="copyMermaid()">Copy Code</button>
             <button class="btn" style="background: var(--accent); color: white;" onclick="downloadPNG()">Download PNG</button>
+            <a href="{% url 'project_versions' project.pk %}" class="btn" style="background: rgba(26,5,162,0.3); color: white; border: 1px solid rgba(26,5,162,0.4);">🕐 History</a>
         </div>
     </div>
 

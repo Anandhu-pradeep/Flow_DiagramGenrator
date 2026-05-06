@@ -96,7 +96,8 @@
 
     <form id="new-project-form" onsubmit="createProject(event)">
         <input type="text" id="project-name" placeholder="Enter Flow Name (e.g. Login Process)" required>
-        <button type="submit" class="btn btn-primary">Create Project</button>
+        <button type="submit" class="btn btn-primary">+ Create Project</button>
+        <a href="{% url 'org_list' %}" class="btn btn-org">🏢 Organizations</a>
     </form>
 
     <div class="project-grid" id="project-list">

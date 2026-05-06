@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+.invite-container { max-width: 600px; margin: 3rem auto; }
+.invite-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2.5rem;
+    box-shadow: 0 20px 40px rgba(26,5,162,0.2);
+}
+.invite-card h2 {
+    margin: 0 0 0.5rem;
+    background: linear-gradient(to right, var(--secondary), var(--accent));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.invite-card .subtitle { color: var(--text-muted); margin-bottom: 2rem; font-size:0.9rem; }
+
+.form-group { margin-bottom: 1.25rem; }
+.form-group label { display: block; margin-bottom: 0.4rem; color: var(--text-muted); font-size:0.88rem; font-weight:600; }
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: white;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+.form-group input:focus, .form-group select:focus {
+    outline: none;
+    border-color: var(--secondary);
+    box-shadow: 0 0 0 2px rgba(143,1,119,0.2);
+}
+.search-results {
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-top: 0.3rem;
+    overflow: hidden;
+    display: none;
+}
+.search-result-item {
+    padding: 0.65rem 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 0.88rem;
+}
+.search-result-item:hover { background: rgba(143,1,119,0.15); }
+.search-result-user { font-weight: 600; }
+.search-result-name { color: var(--text-muted); font-size: 0.8rem; }
+.role-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.5rem; }
+.role-card {
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+.role-card input[type=radio] { position: absolute; opacity: 0; }
+.role-card:has(input:checked), .role-card.selected {
+    border-color: var(--secondary);
+    background: rgba(143,1,119,0.12);
+}
+.role-card-title { font-weight: 700; font-size: 0.9rem; }
+.role-card-desc { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
+.form-actions { display: flex; gap: 1rem; margin-top: 1.75rem; }
+.btn-cancel {
+    background: var(--bg-surface);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+}
+.btn-cancel:hover { border-color: var(--text-muted); color: white; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="invite-container">
+    <div style="margin-bottom:1rem; font-size:0.85rem; color:var(--text-muted);">
+        <a href="{% url 'org_list' %}" style="color:var(--text-muted);text-decoration:none;">Organizations</a>
+        <span style="margin:0 0.5rem;">›</span>
+        <a href="{% url 'org_dashboard' org.slug %}" style="color:var(--text-muted);text-decoration:none;">{{ org.name }}</a>
+        <span style="margin:0 0.5rem;">›</span>
+        <span style="color:var(--text-light);">Invite Member</span>
+    </div>
+
+    <div class="invite-card">
+        <h2>✉️ Invite to {{ org.name }}</h2>
+        <p class="subtitle">Search by username and assign a role to invite them to your organization.</p>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username-search" name="username" placeholder="Search username..." autocomplete="off" required>
+                <div class="search-results" id="searchResults"></div>
+            </div>
+            <div class="form-group">
+                <label>Role</label>
+                <div class="role-cards">
+                    <label class="role-card">
+                        <input type="radio" name="role" value="admin">
+                        <div class="role-card-title">🛡️ Admin</div>
+                        <div class="role-card-desc">Manage members & projects</div>
+                    </label>
+                    <label class="role-card">
+                        <input type="radio" name="role" value="editor" checked>
+                        <div class="role-card-title">✏️ Editor</div>
+                        <div class="role-card-desc">Edit diagrams</div>
+                    </label>
+                    <label class="role-card">
+                        <input type="radio" name="role" value="viewer">
+                        <div class="role-card-title">👁️ Viewer</div>
+                        <div class="role-card-desc">Read-only access</div>
+                    </label>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" style="flex:1;">Send Invitation</button>
+                <a href="{% url 'org_dashboard' org.slug %}" class="btn btn-cancel">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const searchInput = document.getElementById('username-search');
+const resultsBox = document.getElementById('searchResults');
+let debounce;
+
+searchInput.addEventListener('input', function() {
+    clearTimeout(debounce);
+    const q = this.value.trim();
+    if (q.length < 2) { resultsBox.style.display = 'none'; return; }
+    debounce = setTimeout(async () => {
+        const res = await fetch(`/api/users/search/?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        if (!data.users.length) { resultsBox.style.display = 'none'; return; }
+        resultsBox.style.display = 'block';
+        resultsBox.innerHTML = data.users.map(u => `
+            <div class="search-result-item" onclick="selectUser('${u.username}')">
+                <div class="search-result-user">@${u.username}</div>
+                ${u.name ? `<div class="search-result-name">${u.name}</div>` : ''}
+            </div>
+        `).join('');
+    }, 300);
+});
+
+function selectUser(username) {
+    searchInput.value = username;
+    resultsBox.style.display = 'none';
+}
+
+// Close results on outside click
+document.addEventListener('click', e => {
+    if (!searchInput.contains(e.target) && !resultsBox.contains(e.target)) {
+        resultsBox.style.display = 'none';
+    }
+});
+
+// Role card highlight
+document.querySelectorAll('.role-card').forEach(card => {
+    card.addEventListener('click', () => {
+        document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+    });
+});
+// Highlight default
+document.querySelector('.role-card:has(input:checked)')?.classList.add('selected');
+</script>
+{% endblock %}

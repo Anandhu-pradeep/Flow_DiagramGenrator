@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+.notif-page { max-width: 720px; margin: 0 auto; }
+.notif-page h1 {
+    margin-bottom: 0.5rem;
+    background: linear-gradient(to right, var(--secondary), var(--accent));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.notif-page .sub { color: var(--text-muted); margin-bottom: 2rem; font-size:0.9rem; }
+
+.notif-full-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+.notif-full-item.unread {
+    border-left: 3px solid var(--secondary);
+    background: rgba(143,1,119,0.05);
+}
+.notif-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+.notif-body { flex: 1; }
+.notif-title { font-weight: 700; font-size:0.95rem; margin-bottom: 0.2rem; }
+.notif-msg { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 0.5rem; }
+.notif-meta { font-size: 0.78rem; color: rgba(168,156,200,0.6); }
+.notif-actions { display: flex; gap: 0.5rem; margin-top: 0.65rem; }
+.btn-accept {
+    background: rgba(16,185,129,0.2); color: #34d399;
+    border: 1px solid #10b981; border-radius: 6px;
+    padding: 0.3rem 0.85rem; font-size: 0.82rem; font-weight:600;
+    text-decoration: none; transition: background 0.2s;
+}
+.btn-accept:hover { background: rgba(16,185,129,0.35); }
+.btn-reject {
+    background: rgba(239,68,68,0.15); color: #f87171;
+    border: 1px solid rgba(239,68,68,0.3); border-radius:6px;
+    padding: 0.3rem 0.85rem; font-size: 0.82rem; font-weight:600;
+    text-decoration: none; transition: background 0.2s;
+}
+.btn-reject:hover { background: rgba(239,68,68,0.3); }
+
+.type-icon-map {
+    org_invite: '📨';
+}
+
+.empty-notif {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-muted);
+}
+.empty-notif .icon { font-size: 3.5rem; margin-bottom: 1rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+<div class="notif-page">
+    <h1>🔔 Notifications</h1>
+    <p class="sub">All your activity updates, invitations, and alerts in one place.</p>
+
+    {% if notifications %}
+        {% for n in notifications %}
+        <div class="notif-full-item {% if not n.is_read %}unread{% endif %}">
+            <div class="notif-icon">
+                {% if n.notif_type == 'org_invite' %}📨
+                {% elif n.notif_type == 'invite_accepted' %}✅
+                {% elif n.notif_type == 'invite_rejected' %}❌
+                {% elif n.notif_type == 'role_changed' %}🔄
+                {% elif n.notif_type == 'project_shared' %}📁
+                {% elif n.notif_type == 'member_joined' %}👤
+                {% elif n.notif_type == 'comment_mention' %}💬
+                {% else %}🔔
+                {% endif %}
+            </div>
+            <div class="notif-body">
+                <div class="notif-title">{{ n.title }}</div>
+                <div class="notif-msg">{{ n.message }}</div>
+                <div class="notif-meta">
+                    {% if n.sender %}@{{ n.sender.username }} ·{% endif %}
+                    {{ n.created_at|date:"M d, Y H:i" }}
+                </div>
+                {% if n.notif_type == 'org_invite' and n.invitation and n.invitation.status == 'pending' %}
+                <div class="notif-actions">
+                    <a href="{% url 'invite_respond' n.invitation.id 'accept' %}" class="btn-accept">✓ Accept</a>
+                    <a href="{% url 'invite_respond' n.invitation.id 'reject' %}" class="btn-reject">✗ Reject</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-notif">
+            <div class="icon">🎉</div>
+            <h3>All caught up!</h3>
+            <p>No notifications yet. When you receive invitations or updates, they'll appear here.</p>
+        </div>
+    {% endif %}
+</div>
+</div>
+{% endblock %}
