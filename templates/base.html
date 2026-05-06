@@ -200,7 +200,12 @@
         {% if messages %}
         <div class="container" style="padding-bottom: 0;">
             {% for message in messages %}
-            <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-info{% endif %}">
+            <div class="alert
+                {% if 'success' in message.tags %}alert-success
+                {% elif 'error' in message.tags %}alert-error
+                {% elif 'warning' in message.tags %}alert-error
+                {% else %}alert-info
+                {% endif %}">
                 {{ message }}
             </div>
             {% endfor %}

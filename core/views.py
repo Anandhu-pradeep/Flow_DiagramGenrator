@@ -4,6 +4,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.views.generic import TemplateView, ListView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from .forms import CustomRegisterForm, ProfileEditForm
 from rest_framework import generics, status
 from rest_framework.response import Response
@@ -86,12 +87,11 @@ def register_view(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
+            messages.success(request, f'🎉 Registration Successful! Welcome aboard, {user.first_name or user.username}!')
             return redirect('dashboard')
     else:
         form = CustomRegisterForm()
     return render(request, 'auth/register.html', {'form': form})
-
-from django.contrib import messages
 
 def login_view(request):
     if request.method == 'POST':
@@ -100,9 +100,12 @@ def login_view(request):
             user = form.get_user()
             login(request, user)
             if user.is_superuser or user.is_staff:
-                messages.success(request, 'Welcome administrator')
+                messages.success(request, '✅ Welcome, Administrator!')
                 return redirect('admin_dashboard')
+            messages.success(request, f'✅ Login Successful! Welcome back, {user.first_name or user.username}!')
             return redirect('dashboard')
+        else:
+            messages.error(request, '❌ Incorrect username or password. Please try again.')
     else:
         form = AuthenticationForm()
     return render(request, 'auth/login.html', {'form': form})
